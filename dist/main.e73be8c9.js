@@ -11283,6 +11283,10 @@ module.hot.accept(reloadCSS);
 },{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"app1.js":[function(require,module,exports) {
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _jquery = require("jquery");
 
 var _jquery2 = _interopRequireDefault(_jquery);
@@ -11291,50 +11295,71 @@ require("./app1.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// 初始化html
-var html = "\n  <section id=\"app1\">\n    <div class=\"output\">\n      <span id=\"number\">100</span>\n    </div>\n    <div class=\"actions\">\n      <button id=\"add1\">+1</button>\n      <button id=\"minus1\">-1</button>\n      <button id=\"multiply2\">*2</button>\n      <button id=\"divide2\">\xF72</button>\n    </div>\n  </section>\n";
+// 数据相关都放到 m
+var m = {
+  data: {
+    n: parseInt(localStorage.getItem("n"))
+  }
+};
 
-var $element = (0, _jquery2.default)(html).prependTo((0, _jquery2.default)("body>.page"));
+// 视图相关放到 v
+var v = {
+  el: null,
+  html: "\n    <div>\n      <div class=\"output\">\n        <span id=\"number\">{{n}}</span>\n      </div>\n      <div class=\"actions\">\n        <button id=\"add1\">+1</button>\n        <button id=\"minus1\">-1</button>\n        <button id=\"multiply2\">*2</button>\n        <button id=\"divide2\">\xF72</button>\n      </div>\n    </div>\n  ",
+  init: function init(container) {
+    v.el = (0, _jquery2.default)(container); // 存下 container
+  },
+  render: function render(n) {
+    if (v.el.children.length !== 0) {
+      v.el.empty();
+    }
+    (0, _jquery2.default)(v.html.replace("{{n}}", n)).appendTo((0, _jquery2.default)(v.el));
+  }
+};
 
-// 需要重要的数据
-var $number = (0, _jquery2.default)("#number");
-var $button1 = (0, _jquery2.default)("#add1");
-var $button2 = (0, _jquery2.default)("#minus1");
-var $button3 = (0, _jquery2.default)("#multiply2");
-var $button4 = (0, _jquery2.default)("#divide2");
+// 其他放到 c
+var c = {
+  init: function init(container) {
+    v.init(container);
+    v.render(m.data.n);
+    // 不能直接放在 c 中，因为c定义的时候就已经会执行 $("#number") 去寻找元素，此时 html 还没被渲染到页面中（v.render()还没执行）
+    // 绑定事件在 container 上后，button 都不需要找
+    // c.ui = {
+    //   number: $("#number"),
+    //   button1: $("#add1"),
+    //   button2: $("#minus1"),
+    //   button3: $("#multiply2"),
+    //   button4: $("#divide2"),
+    // };
+    c.bindEvents();
+  },
+  bindEvents: function bindEvents() {
+    // 因为每点击一次就会新生成一个 v.html 插入到 el 中，所有的button也是新生成的，此处点击事件应该绑定在不会重新渲染的 el 上
+    v.el.on("click", "#add1", function () {
+      m.data.n += 1;
+      localStorage.setItem("n", m.data.n);
+      v.render(m.data.n);
+    });
+    v.el.on("click", "#minus1", function () {
+      m.data.n -= 1;
+      localStorage.setItem("n", m.data.n);
+      v.render(m.data.n);
+    });
+    v.el.on("click", "#multiply2", function () {
+      m.data.n *= 2;
+      localStorage.setItem("n", m.data.n);
+      v.render(m.data.n);
+    });
+    v.el.on("click", "#divide2", function () {
+      m.data.n /= 2;
+      localStorage.setItem("n", m.data.n);
+      v.render(m.data.n);
+    });
+  }
+};
 
-// 初始化数据
-// 每次刷新后仍显示原先计算好的数据（刷新后数据不重置为100）
-var n = localStorage.getItem("n");
-
-// 将数据渲染到页面：从localStorage中取出的数据写入页面中
-$number.text(n || 100);
-
-// 绑定鼠标事件
-$button1.on("click", function () {
-  var n = parseInt($number.text());
-  n += 1;
-  localStorage.setItem("n", n); // 存储计算后的数字
-  $number.text(n);
-});
-$button2.on("click", function () {
-  var n = parseInt($number.text());
-  n -= 1;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
-$button3.on("click", function () {
-  var n = parseInt($number.text());
-  n *= 2;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
-$button4.on("click", function () {
-  var n = parseInt($number.text());
-  n /= 2;
-  localStorage.setItem("n", n);
-  $number.text(n);
-});
+// 把 c 暴露出去
+exports.default = c;
 },{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app1.css":"app1.css"}],"app2.css":[function(require,module,exports) {
 
 var reloadCSS = require('_css_loader');
@@ -11458,13 +11483,19 @@ require("./reset.css");
 
 require("./global.css");
 
-require("./app1.js");
+var _app = require("./app1.js");
+
+var _app2 = _interopRequireDefault(_app);
 
 require("./app2.js");
 
 require("./app3.js");
 
 require("./app4.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+_app2.default.init("#app1");
 },{"./reset.css":"reset.css","./global.css":"global.css","./app1.js":"app1.js","./app2.js":"app2.js","./app3.js":"app3.js","./app4.js":"app4.js"}],"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -11494,7 +11525,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '1854' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '5179' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
