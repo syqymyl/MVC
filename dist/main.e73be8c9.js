@@ -11291,16 +11291,26 @@ require("./app1.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// 初始化html
+var html = "\n  <section id=\"app1\">\n    <div class=\"output\">\n      <span id=\"number\">100</span>\n    </div>\n    <div class=\"actions\">\n      <button id=\"add1\">+1</button>\n      <button id=\"minus1\">-1</button>\n      <button id=\"multiply2\">*2</button>\n      <button id=\"divide2\">\xF72</button>\n    </div>\n  </section>\n";
+
+var $element = (0, _jquery2.default)(html).prependTo((0, _jquery2.default)("body>.page"));
+
+// 需要重要的数据
 var $number = (0, _jquery2.default)("#number");
 var $button1 = (0, _jquery2.default)("#add1");
 var $button2 = (0, _jquery2.default)("#minus1");
 var $button3 = (0, _jquery2.default)("#multiply2");
 var $button4 = (0, _jquery2.default)("#divide2");
 
+// 初始化数据
 // 每次刷新后仍显示原先计算好的数据（刷新后数据不重置为100）
 var n = localStorage.getItem("n");
-$number.text(n || 100); // 将从localStorage中取出的数据写入页面中
 
+// 将数据渲染到页面：从localStorage中取出的数据写入页面中
+$number.text(n || 100);
+
+// 绑定鼠标事件
 $button1.on("click", function () {
   var n = parseInt($number.text());
   n += 1;
@@ -11341,8 +11351,12 @@ require("./app2.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var $tabBar = (0, _jquery2.default)("#app2 .tab-bar"); // 虽然多个文件都引入了jquery，但是jquery只加载一次
+var html = "\n  <section id=\"app2\">\n    <ol class=\"tab-bar\">\n      <li>1</li>\n      <li>2</li>\n    </ol>\n    <ol class=\"tab-content\">\n      <li>\u5185\u5BB91</li>\n      <li>\u5185\u5BB92</li>\n    </ol>\n  </section>\n"; // 虽然多个文件都引入了jquery，但是jquery只加载一次
 
+
+var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)("body>.page"));
+
+var $tabBar = (0, _jquery2.default)("#app2 .tab-bar");
 var $tabContent = (0, _jquery2.default)("#app2 .tab-content");
 var localKey = "app2.index";
 var index = localStorage.getItem(localKey) || 0;
@@ -11381,6 +11395,10 @@ var _jquery2 = _interopRequireDefault(_jquery);
 require("./app3.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var html = "\n  <section id=\"app3\">\n    <div class=\"square\"></div>\n  </section>\n";
+
+var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)("body>.page"));
 
 var $square = (0, _jquery2.default)("#app3 .square");
 var localKey = "app3.index";
@@ -11421,6 +11439,10 @@ var _jquery2 = _interopRequireDefault(_jquery);
 require("./app4.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var html = "\n<section id=\"app4\">\n  <div class=\"circle\"></div>\n</section>\n";
+
+var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)("body>.page"));
 
 var $circle = (0, _jquery2.default)("#app4 .circle");
 
@@ -11472,7 +11494,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '8177' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '1854' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
