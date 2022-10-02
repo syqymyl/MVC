@@ -1,7 +1,6 @@
 import $, { get } from 'jquery'
 import './app1.css'
 import Model from './base/Model.js'
-import View from './base/View.js'
 
 // eventBus 有 on 事件和 trigger 事件
 const eventBus = $({})
@@ -18,42 +17,37 @@ const m = new Model({
   },
 })
 
-// 其他放到 c
-const c = {
-  v: null,
-  initV() {
-    // 视图相关放到 v，由于 v 与 c 有联系，必须先拿到 container 才能创建 v 对象，因此让 v 和 c 共用一个对象
-    c.v = new View({
-      el: c.container,
-      html: `
-        <div>
-          <div class="output">
-            <span id="number">{{n}}</span>
-          </div>
-          <div class="actions">
-            <button id="add1">+1</button>
-            <button id="minus1">-1</button>
-            <button id="multiply2">*2</button>
-            <button id="divide2">÷2</button>
-          </div>
-        </div>
-      `,
-      render(n) {
-        if (c.v.el.children.length !== 0) {
-          c.v.el.empty()
-        }
-        $(c.v.html.replace('{{n}}', n)).appendTo($(c.v.el))
-      },
-    })
-    c.v.render(m.data.n) // 渲染
-  },
+// 其他放到 view
+const view = {
+  // vue.js: View
+  el: null,
+  html: `
+    <div>
+      <div class="output">
+        <span id="number">{{n}}</span>
+      </div>
+      <div class="actions">
+        <button id="add1">+1</button>
+        <button id="minus1">-1</button>
+        <button id="multiply2">*2</button>
+        <button id="divide2">÷2</button>
+      </div>
+    </div>
+  `,
+
   init(container) {
-    c.container = container
-    c.initV()
-    c.autoBindEvents()
+    view.el = $(container)
+    view.render(m.data.n)
+    view.autoBindEvents()
     eventBus.on('m:updated', () => {
-      c.v.render(m.data.n)
+      view.render(m.data.n)
     })
+  },
+  render(n) {
+    if (view.el.children.length !== 0) {
+      view.el.empty()
+    }
+    $(view.html.replace('{{n}}', n)).appendTo($(view.el))
   },
   // 表驱动编程
   events: {
@@ -76,15 +70,15 @@ const c = {
   },
 
   autoBindEvents() {
-    for (let key in c.events) {
-      const value = c[c.events[key]]
+    for (let key in view.events) {
+      const value = view[view.events[key]]
       const spaceIndex = key.indexOf(' ')
       const part1 = key.slice(0, spaceIndex)
       const part2 = key.slice(spaceIndex + 1)
-      c.v.el.on(part1, part2, value)
+      view.el.on(part1, part2, value)
     }
   },
 }
 
-// 把 c 暴露出去
-export default c
+// 把 view 暴露出去
+export default view

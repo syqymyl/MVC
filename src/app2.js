@@ -1,7 +1,6 @@
 import $ from 'jquery'
 import './app2.css'
 import Model from './base/Model.js'
-import View from './base/View.js'
 
 const eventBus = $(window)
 
@@ -18,7 +17,9 @@ const m = new Model({
   },
 })
 
-const v = {
+const v = {}
+
+const view = {
   el: null,
   html: (index) => {
     return `
@@ -36,24 +37,18 @@ const v = {
   },
 
   init(container) {
-    v.el = $(container) // 存下 container
+    view.el = $(container)
+    view.render(m.data.index)
+    view.autoBindEvents()
+    eventBus.on('m:updated', () => {
+      view.render(m.data.index)
+    })
   },
   render(index) {
-    if (v.el.children.length !== 0) {
-      v.el.empty()
+    if (view.el.children.length !== 0) {
+      view.el.empty()
     }
-    $(v.html(index)).appendTo($(v.el))
-  },
-}
-
-const c = {
-  init(container) {
-    v.init(container)
-    v.render(m.data.index)
-    c.autoBindEvents()
-    eventBus.on('m:updated', () => {
-      v.render(m.data.index)
-    })
+    $(view.html(index)).appendTo($(view.el))
   },
   events: {
     'click .tab-bar li': 'x',
@@ -63,14 +58,14 @@ const c = {
     m.update({ index: index })
   },
   autoBindEvents() {
-    for (let key in c.events) {
-      const value = c[c.events[key]]
+    for (let key in view.events) {
+      const value = view[view.events[key]]
       const spaceIndex = key.indexOf(' ')
       const part1 = key.slice(0, spaceIndex)
       const part2 = key.slice(spaceIndex + 1)
-      v.el.on(part1, part2, value)
+      view.el.on(part1, part2, value)
     }
   },
 }
 
-export default c
+export default view

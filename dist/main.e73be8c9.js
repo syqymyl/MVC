@@ -11330,35 +11330,7 @@ var Model = function () {
 }();
 
 exports.default = Model;
-},{}],"base\\View.js":[function(require,module,exports) {
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _jquery = require('jquery');
-
-var _jquery2 = _interopRequireDefault(_jquery);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var View = function View(_ref) {
-  var el = _ref.el,
-      html = _ref.html,
-      render = _ref.render;
-
-  _classCallCheck(this, View);
-
-  this.el = (0, _jquery2.default)(el);
-  this.html = html;
-  this.render = render;
-};
-
-exports.default = View;
-},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js"}],"app1.js":[function(require,module,exports) {
+},{}],"app1.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11374,10 +11346,6 @@ require('./app1.css');
 var _Model = require('./base/Model.js');
 
 var _Model2 = _interopRequireDefault(_Model);
-
-var _View = require('./base/View.js');
-
-var _View2 = _interopRequireDefault(_View);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -11396,30 +11364,25 @@ var m = new _Model2.default({
   }
 });
 
-// 其他放到 c
-var c = {
-  v: null,
-  initV: function initV() {
-    // 视图相关放到 v，由于 v 与 c 有联系，必须先拿到 container 才能创建 v 对象，因此让 v 和 c 共用一个对象
-    c.v = new _View2.default({
-      el: c.container,
-      html: '\n        <div>\n          <div class="output">\n            <span id="number">{{n}}</span>\n          </div>\n          <div class="actions">\n            <button id="add1">+1</button>\n            <button id="minus1">-1</button>\n            <button id="multiply2">*2</button>\n            <button id="divide2">\xF72</button>\n          </div>\n        </div>\n      ',
-      render: function render(n) {
-        if (c.v.el.children.length !== 0) {
-          c.v.el.empty();
-        }
-        (0, _jquery2.default)(c.v.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(c.v.el));
-      }
-    });
-    c.v.render(m.data.n); // 渲染
-  },
+// 其他放到 view
+var view = {
+  // vue.js: View
+  el: null,
+  html: '\n    <div>\n      <div class="output">\n        <span id="number">{{n}}</span>\n      </div>\n      <div class="actions">\n        <button id="add1">+1</button>\n        <button id="minus1">-1</button>\n        <button id="multiply2">*2</button>\n        <button id="divide2">\xF72</button>\n      </div>\n    </div>\n  ',
+
   init: function init(container) {
-    c.container = container;
-    c.initV();
-    c.autoBindEvents();
+    view.el = (0, _jquery2.default)(container);
+    view.render(m.data.n);
+    view.autoBindEvents();
     eventBus.on('m:updated', function () {
-      c.v.render(m.data.n);
+      view.render(m.data.n);
     });
+  },
+  render: function render(n) {
+    if (view.el.children.length !== 0) {
+      view.el.empty();
+    }
+    (0, _jquery2.default)(view.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(view.el));
   },
 
   // 表驱动编程
@@ -11442,19 +11405,19 @@ var c = {
     m.update({ n: m.data.n / 2 });
   },
   autoBindEvents: function autoBindEvents() {
-    for (var key in c.events) {
-      var value = c[c.events[key]];
+    for (var key in view.events) {
+      var value = view[view.events[key]];
       var spaceIndex = key.indexOf(' ');
       var part1 = key.slice(0, spaceIndex);
       var part2 = key.slice(spaceIndex + 1);
-      c.v.el.on(part1, part2, value);
+      view.el.on(part1, part2, value);
     }
   }
 };
 
-// 把 c 暴露出去
-exports.default = c;
-},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app1.css":"app1.css","./base/Model.js":"base\\Model.js","./base/View.js":"base\\View.js"}],"app2.css":[function(require,module,exports) {
+// 把 view 暴露出去
+exports.default = view;
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app1.css":"app1.css","./base/Model.js":"base\\Model.js"}],"app2.css":[function(require,module,exports) {
 
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
@@ -11476,10 +11439,6 @@ var _Model = require('./base/Model.js');
 
 var _Model2 = _interopRequireDefault(_Model);
 
-var _View = require('./base/View.js');
-
-var _View2 = _interopRequireDefault(_View);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var eventBus = (0, _jquery2.default)(window);
@@ -11497,31 +11456,27 @@ var m = new _Model2.default({
   }
 });
 
-var v = {
+var v = {};
+
+var view = {
   el: null,
   html: function html(index) {
     return '\n      <div>\n        <ol class="tab-bar">\n        <li class="' + (index === 0 ? 'selected' : '') + '" data-index = "0">1</li>\n        <li class="' + (index === 1 ? 'selected' : '') + '" data-index = "1">2</li>\n      </ol>\n      <ol class="tab-content">\n      <li class="' + (index === 0 ? 'active' : '') + '">\u5185\u5BB91</li>\n      <li class="' + (index === 1 ? 'active' : '') + '">\u5185\u5BB92</li>\n        </ol>\n      </div>\n    ';
   },
 
   init: function init(container) {
-    v.el = (0, _jquery2.default)(container); // 存下 container
+    view.el = (0, _jquery2.default)(container);
+    view.render(m.data.index);
+    view.autoBindEvents();
+    eventBus.on('m:updated', function () {
+      view.render(m.data.index);
+    });
   },
   render: function render(index) {
-    if (v.el.children.length !== 0) {
-      v.el.empty();
+    if (view.el.children.length !== 0) {
+      view.el.empty();
     }
-    (0, _jquery2.default)(v.html(index)).appendTo((0, _jquery2.default)(v.el));
-  }
-};
-
-var c = {
-  init: function init(container) {
-    v.init(container);
-    v.render(m.data.index);
-    c.autoBindEvents();
-    eventBus.on('m:updated', function () {
-      v.render(m.data.index);
-    });
+    (0, _jquery2.default)(view.html(index)).appendTo((0, _jquery2.default)(view.el));
   },
 
   events: {
@@ -11532,18 +11487,18 @@ var c = {
     m.update({ index: index });
   },
   autoBindEvents: function autoBindEvents() {
-    for (var key in c.events) {
-      var value = c[c.events[key]];
+    for (var key in view.events) {
+      var value = view[view.events[key]];
       var spaceIndex = key.indexOf(' ');
       var part1 = key.slice(0, spaceIndex);
       var part2 = key.slice(spaceIndex + 1);
-      v.el.on(part1, part2, value);
+      view.el.on(part1, part2, value);
     }
   }
 };
 
-exports.default = c;
-},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app2.css":"app2.css","./base/Model.js":"base\\Model.js","./base/View.js":"base\\View.js"}],"app3.css":[function(require,module,exports) {
+exports.default = view;
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app2.css":"app2.css","./base/Model.js":"base\\Model.js"}],"app3.css":[function(require,module,exports) {
 
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
