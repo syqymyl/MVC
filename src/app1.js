@@ -1,58 +1,49 @@
 import $, { get } from 'jquery'
 import './app1.css'
+import Model from './base/Model.js'
+import View from './base/View.js'
 
 // eventBus 有 on 事件和 trigger 事件
 const eventBus = $({})
 
 // 数据相关都放到 m
-const m = {
+const m = new Model({
   data: {
     n: parseInt(localStorage.getItem('n')),
   },
-
-  // 对数据操作的增删改查
-  create() {},
-  delete() {},
   update(data) {
     Object.assign(m.data, data)
     eventBus.trigger('m:updated')
     localStorage.setItem('n', m.data.n)
   },
-  get() {},
-}
-
-// 视图相关放到 v
-const v = {
-  el: null,
-  html: `
-    <div>
-      <div class="output">
-        <span id="number">{{n}}</span>
-      </div>
-      <div class="actions">
-        <button id="add1">+1</button>
-        <button id="minus1">-1</button>
-        <button id="multiply2">*2</button>
-        <button id="divide2">÷2</button>
-      </div>
-    </div>
-  `,
-
-  init(container) {
-    v.el = $(container) // 存下 container
-  },
-  render(n) {
-    //view = render(data)
-    if (v.el.children.length !== 0) {
-      v.el.empty()
-    }
-    $(v.html.replace('{{n}}', n)).appendTo($(v.el))
-  },
-}
+})
 
 // 其他放到 c
 const c = {
   init(container) {
+    // 视图相关放到 v
+    const v = new View({
+      el: container,
+      html: `
+        <div>
+          <div class="output">
+            <span id="number">{{n}}</span>
+          </div>
+          <div class="actions">
+            <button id="add1">+1</button>
+            <button id="minus1">-1</button>
+            <button id="multiply2">*2</button>
+            <button id="divide2">÷2</button>
+          </div>
+        </div>
+      `,
+      render(n) {
+        if (v.el.children.length !== 0) {
+          v.el.empty()
+        }
+        $(v.html.replace('{{n}}', n)).appendTo($(v.el))
+      },
+    })
     v.init(container)
     v.render(m.data.n)
     c.autoBindEvents()

@@ -1,24 +1,22 @@
 import $ from 'jquery'
 import './app2.css'
+import Model from './base/Model.js'
+import View from './base/View.js'
 
 const eventBus = $(window)
 
 const localKey = 'app2.index'
 
-const m = {
+const m = new Model({
   data: {
     index: parseInt(localStorage.getItem(localKey)) || 0,
   },
-
-  create() {},
-  delete() {},
   update(data) {
     Object.assign(m.data, data)
     eventBus.trigger('m:updated')
     localStorage.setItem(localKey, m.data.index)
   },
-  get() {},
-}
+})
 
 const v = {
   el: null,
@@ -51,7 +49,6 @@ const v = {
 const c = {
   init(container) {
     v.init(container)
-    console.log(m.data.index)
     v.render(m.data.index)
     c.autoBindEvents()
     eventBus.on('m:updated', () => {

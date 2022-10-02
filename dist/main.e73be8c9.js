@@ -11280,7 +11280,93 @@ return jQuery;
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"app1.js":[function(require,module,exports) {
+},{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"base\\Model.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Model = function () {
+  function Model(options) {
+    var _this = this;
+
+    _classCallCheck(this, Model);
+
+    ;['data', 'create', 'delete', 'update', 'get'].forEach(function (key) {
+      if (key in options) {
+        _this[key] = options[key];
+      }
+    });
+    // 以下代码与上面等效
+    // this.data = options.data
+    // this.create = options.create
+    // this.delete = options.delete
+    // this.update = options.update
+    // this.get = options.get
+  }
+
+  _createClass(Model, [{
+    key: 'create',
+    value: function create() {
+      // if (console && console.error) {
+      //   console.error('你还没有实现 create')
+      // }
+
+      // 此句使用了可选链运算符?.
+      // console?.error?.('你还没有实现 create')
+
+      // 以上两种代码与此句等效
+      console && console.error && console.error('你还没有实现 create');
+    }
+  }, {
+    key: 'delete',
+    value: function _delete() {
+      console && console.error && console.error('你还没有实现 delete');
+    }
+  }, {
+    key: 'update',
+    value: function update(data) {
+      console && console.error && console.error('你还没有实现 update');
+    }
+  }, {
+    key: 'get',
+    value: function get() {
+      console && console.error && console.error('你还没有实现 get');
+    }
+  }]);
+
+  return Model;
+}();
+
+exports.default = Model;
+},{}],"base\\View.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var View = function View(_ref) {
+  var el = _ref.el,
+      html = _ref.html,
+      render = _ref.render;
+
+  _classCallCheck(this, View);
+
+  this.el = $(el);
+  this.html = html;
+  this.render = render;
+};
+
+exports.default = View;
+},{}],"app1.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11293,48 +11379,45 @@ var _jquery2 = _interopRequireDefault(_jquery);
 
 require('./app1.css');
 
+var _Model = require('./base/Model.js');
+
+var _Model2 = _interopRequireDefault(_Model);
+
+var _View = require('./base/View.js');
+
+var _View2 = _interopRequireDefault(_View);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // eventBus 有 on 事件和 trigger 事件
 var eventBus = (0, _jquery2.default)({});
 
 // 数据相关都放到 m
-var m = {
+var m = new _Model2.default({
   data: {
     n: parseInt(localStorage.getItem('n'))
   },
-
-  // 对数据操作的增删改查
-  create: function create() {},
-  delete: function _delete() {},
   update: function update(data) {
     Object.assign(m.data, data);
     eventBus.trigger('m:updated');
     localStorage.setItem('n', m.data.n);
-  },
-  get: function get() {}
-};
-
-// 视图相关放到 v
-var v = {
-  el: null,
-  html: '\n    <div>\n      <div class="output">\n        <span id="number">{{n}}</span>\n      </div>\n      <div class="actions">\n        <button id="add1">+1</button>\n        <button id="minus1">-1</button>\n        <button id="multiply2">*2</button>\n        <button id="divide2">\xF72</button>\n      </div>\n    </div>\n  ',
-
-  init: function init(container) {
-    v.el = (0, _jquery2.default)(container); // 存下 container
-  },
-  render: function render(n) {
-    //view = render(data)
-    if (v.el.children.length !== 0) {
-      v.el.empty();
-    }
-    (0, _jquery2.default)(v.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(v.el));
   }
-};
+});
 
 // 其他放到 c
 var c = {
   init: function init(container) {
+    // 视图相关放到 v
+    var v = new _View2.default({
+      el: container,
+      html: '\n        <div>\n          <div class="output">\n            <span id="number">{{n}}</span>\n          </div>\n          <div class="actions">\n            <button id="add1">+1</button>\n            <button id="minus1">-1</button>\n            <button id="multiply2">*2</button>\n            <button id="divide2">\xF72</button>\n          </div>\n        </div>\n      ',
+      render: function render(n) {
+        if (v.el.children.length !== 0) {
+          v.el.empty();
+        }
+        (0, _jquery2.default)(v.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(v.el));
+      }
+    });
     v.init(container);
     v.render(m.data.n);
     c.autoBindEvents();
@@ -11378,7 +11461,7 @@ var c = {
 
 // 把 c 暴露出去
 exports.default = c;
-},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app1.css":"app1.css"}],"app2.css":[function(require,module,exports) {
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app1.css":"app1.css","./base/Model.js":"base\\Model.js","./base/View.js":"base\\View.js"}],"app2.css":[function(require,module,exports) {
 
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
@@ -11396,26 +11479,30 @@ var _jquery2 = _interopRequireDefault(_jquery);
 
 require('./app2.css');
 
+var _Model = require('./base/Model.js');
+
+var _Model2 = _interopRequireDefault(_Model);
+
+var _View = require('./base/View.js');
+
+var _View2 = _interopRequireDefault(_View);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var eventBus = (0, _jquery2.default)(window);
 
 var localKey = 'app2.index';
 
-var m = {
+var m = new _Model2.default({
   data: {
     index: parseInt(localStorage.getItem(localKey)) || 0
   },
-
-  create: function create() {},
-  delete: function _delete() {},
   update: function update(data) {
     Object.assign(m.data, data);
     eventBus.trigger('m:updated');
     localStorage.setItem(localKey, m.data.index);
-  },
-  get: function get() {}
-};
+  }
+});
 
 var v = {
   el: null,
@@ -11437,7 +11524,6 @@ var v = {
 var c = {
   init: function init(container) {
     v.init(container);
-    console.log(m.data.index);
     v.render(m.data.index);
     c.autoBindEvents();
     eventBus.on('m:updated', function () {
@@ -11464,7 +11550,7 @@ var c = {
 };
 
 exports.default = c;
-},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app2.css":"app2.css"}],"app3.css":[function(require,module,exports) {
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app2.css":"app2.css","./base/Model.js":"base\\Model.js","./base/View.js":"base\\View.js"}],"app3.css":[function(require,module,exports) {
 
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
