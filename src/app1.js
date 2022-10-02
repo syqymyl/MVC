@@ -1,12 +1,25 @@
-import $ from "jquery";
-import "./app1.css";
+import $, { get } from 'jquery'
+import './app1.css'
+
+// eventBus 有 on 事件和 trigger 事件
+const eventBus = $({})
 
 // 数据相关都放到 m
 const m = {
   data: {
-    n: parseInt(localStorage.getItem("n")),
+    n: parseInt(localStorage.getItem('n')),
   },
-};
+
+  // 对数据操作的增删改查
+  create() {},
+  delete() {},
+  update(data) {
+    Object.assign(m.data, data)
+    eventBus.trigger('m:updated')
+    localStorage.setItem('n', m.data.n)
+  },
+  get() {},
+}
 
 // 视图相关放到 v
 const v = {
@@ -24,58 +37,62 @@ const v = {
       </div>
     </div>
   `,
+
   init(container) {
-    v.el = $(container); // 存下 container
+    v.el = $(container) // 存下 container
   },
   render(n) {
+    //view = render(data)
     if (v.el.children.length !== 0) {
-      v.el.empty();
+      v.el.empty()
     }
-    $(v.html.replace("{{n}}", n)).appendTo($(v.el));
+    $(v.html.replace('{{n}}', n)).appendTo($(v.el))
   },
-};
+}
 
 // 其他放到 c
 const c = {
   init(container) {
-    v.init(container);
-    v.render(m.data.n);
-    // 不能直接放在 c 中，因为c定义的时候就已经会执行 $("#number") 去寻找元素，此时 html 还没被渲染到页面中（v.render()还没执行）
-    // 绑定事件在 container 上后，button 都不需要找
-    // c.ui = {
-    //   number: $("#number"),
-    //   button1: $("#add1"),
-    //   button2: $("#minus1"),
-    //   button3: $("#multiply2"),
-    //   button4: $("#divide2"),
-    // };
-    c.bindEvents();
+    v.init(container)
+    v.render(m.data.n)
+    c.autoBindEvents()
+    eventBus.on('m:updated', () => {
+      v.render(m.data.n)
+    })
+  },
+  // 表驱动编程
+  events: {
+    'click #add1': 'add',
+    'click #minus1': 'minus',
+    'click #multiply2': 'mul',
+    'click #divide2': 'div',
+  },
+  add() {
+    m.update({ n: m.data.n + 1 })
+  },
+  minus() {
+    m.update({ n: m.data.n - 1 })
+  },
+  mul() {
+    m.update({ n: m.data.n * 2 })
+  },
+  div() {
+    m.update({ n: m.data.n / 2 })
   },
 
-  bindEvents() {
-    // 因为每点击一次就会新生成一个 v.html 插入到 el 中，所有的button也是新生成的，此处点击事件应该绑定在不会重新渲染的 el 上
-    v.el.on("click", "#add1", () => {
-      m.data.n += 1;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
-    v.el.on("click", "#minus1", () => {
-      m.data.n -= 1;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
-    v.el.on("click", "#multiply2", () => {
-      m.data.n *= 2;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
-    v.el.on("click", "#divide2", () => {
-      m.data.n /= 2;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
+  autoBindEvents() {
+    for (let key in c.events) {
+      // c.events[key]: "add" "minus" "mul" "div"
+      // c["add"]: add(){...}
+      const value = c[c.events[key]]
+      const spaceIndex = key.indexOf(' ')
+      const part1 = key.slice(0, spaceIndex)
+      const part2 = key.slice(spaceIndex + 1)
+      // console.log(part1, part2, value);
+      v.el.on(part1, part2, value)
+    }
   },
-};
+}
 
 // 把 c 暴露出去
-export default c;
+export default c

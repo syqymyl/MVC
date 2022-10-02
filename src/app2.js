@@ -1,46 +1,79 @@
-import $ from "jquery"; // 虽然多个文件都引入了jquery，但是jquery只加载一次
-import "./app2.css";
+import $ from 'jquery'
+import './app2.css'
 
-const html = `
-  <section id="app2">
-    <ol class="tab-bar">
-      <li>1</li>
-      <li>2</li>
-    </ol>
-    <ol class="tab-content">
-      <li>内容1</li>
-      <li>内容2</li>
-    </ol>
-  </section>
-`;
+const eventBus = $(window)
 
-const $element = $(html).appendTo($("body>.page"));
+const localKey = 'app2.index'
 
-const $tabBar = $("#app2 .tab-bar");
-const $tabContent = $("#app2 .tab-content");
-const localKey = "app2.index";
-const index = localStorage.getItem(localKey) || 0;
+const m = {
+  data: {
+    index: parseInt(localStorage.getItem(localKey)) || 0,
+  },
 
-// 监听tab-Bar的子元素li的点击事件
-$tabBar.on("click", "li", (e) => {
-  const $li = $(e.currentTarget); // 获取当前被点击的元素，其子元素被点击不会被获取到，但是e.target都会获取到
-  $li.addClass("selected").siblings().removeClass("selected");
+  create() {},
+  delete() {},
+  update(data) {
+    Object.assign(m.data, data)
+    eventBus.trigger('m:updated')
+    localStorage.setItem(localKey, m.data.index)
+  },
+  get() {},
+}
 
-  const index = $li.index();
-  localStorage.setItem(localKey, index);
-  $tabContent
-    .children()
-    .eq(index)
-    .addClass("active") // 为标签添加属性active，事件触发后内容的显示和隐藏均在css定义好，这是基于一种抽象的思想：样式与行为分离
-    .siblings()
-    .removeClass("active");
+const v = {
+  el: null,
+  html: (index) => {
+    return `
+      <div>
+        <ol class="tab-bar">
+        <li class="${index === 0 ? 'selected' : ''}" data-index = "0">1</li>
+        <li class="${index === 1 ? 'selected' : ''}" data-index = "1">2</li>
+      </ol>
+      <ol class="tab-content">
+      <li class="${index === 0 ? 'active' : ''}">内容1</li>
+      <li class="${index === 1 ? 'active' : ''}">内容2</li>
+        </ol>
+      </div>
+    `
+  },
 
-  // 永远不要用直接操作css的js api：css show hide
-  //   $tabContent
-  //     .children()
-  //     .eq(index)
-  //     .css({ display: "block" })
-  //     .siblings()
-  //     .css({ display: "none" });
-});
-$tabBar.children().eq(index).trigger("click"); // 默认触发显示内容1
+  init(container) {
+    v.el = $(container) // 存下 container
+  },
+  render(index) {
+    if (v.el.children.length !== 0) {
+      v.el.empty()
+    }
+    $(v.html(index)).appendTo($(v.el))
+  },
+}
+
+const c = {
+  init(container) {
+    v.init(container)
+    console.log(m.data.index)
+    v.render(m.data.index)
+    c.autoBindEvents()
+    eventBus.on('m:updated', () => {
+      v.render(m.data.index)
+    })
+  },
+  events: {
+    'click .tab-bar li': 'x',
+  },
+  x(e) {
+    const index = parseInt(e.currentTarget.dataset.index)
+    m.update({ index: index })
+  },
+  autoBindEvents() {
+    for (let key in c.events) {
+      const value = c[c.events[key]]
+      const spaceIndex = key.indexOf(' ')
+      const part1 = key.slice(0, spaceIndex)
+      const part2 = key.slice(spaceIndex + 1)
+      v.el.on(part1, part2, value)
+    }
+  },
+}
+
+export default c

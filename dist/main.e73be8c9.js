@@ -11281,39 +11281,54 @@ var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
 },{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"app1.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _jquery = require("jquery");
+var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-require("./app1.css");
+require('./app1.css');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// eventBus 有 on 事件和 trigger 事件
+var eventBus = (0, _jquery2.default)({});
 
 // 数据相关都放到 m
 var m = {
   data: {
-    n: parseInt(localStorage.getItem("n"))
-  }
+    n: parseInt(localStorage.getItem('n'))
+  },
+
+  // 对数据操作的增删改查
+  create: function create() {},
+  delete: function _delete() {},
+  update: function update(data) {
+    Object.assign(m.data, data);
+    eventBus.trigger('m:updated');
+    localStorage.setItem('n', m.data.n);
+  },
+  get: function get() {}
 };
 
 // 视图相关放到 v
 var v = {
   el: null,
-  html: "\n    <div>\n      <div class=\"output\">\n        <span id=\"number\">{{n}}</span>\n      </div>\n      <div class=\"actions\">\n        <button id=\"add1\">+1</button>\n        <button id=\"minus1\">-1</button>\n        <button id=\"multiply2\">*2</button>\n        <button id=\"divide2\">\xF72</button>\n      </div>\n    </div>\n  ",
+  html: '\n    <div>\n      <div class="output">\n        <span id="number">{{n}}</span>\n      </div>\n      <div class="actions">\n        <button id="add1">+1</button>\n        <button id="minus1">-1</button>\n        <button id="multiply2">*2</button>\n        <button id="divide2">\xF72</button>\n      </div>\n    </div>\n  ',
+
   init: function init(container) {
     v.el = (0, _jquery2.default)(container); // 存下 container
   },
   render: function render(n) {
+    //view = render(data)
     if (v.el.children.length !== 0) {
       v.el.empty();
     }
-    (0, _jquery2.default)(v.html.replace("{{n}}", n)).appendTo((0, _jquery2.default)(v.el));
+    (0, _jquery2.default)(v.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(v.el));
   }
 };
 
@@ -11322,39 +11337,42 @@ var c = {
   init: function init(container) {
     v.init(container);
     v.render(m.data.n);
-    // 不能直接放在 c 中，因为c定义的时候就已经会执行 $("#number") 去寻找元素，此时 html 还没被渲染到页面中（v.render()还没执行）
-    // 绑定事件在 container 上后，button 都不需要找
-    // c.ui = {
-    //   number: $("#number"),
-    //   button1: $("#add1"),
-    //   button2: $("#minus1"),
-    //   button3: $("#multiply2"),
-    //   button4: $("#divide2"),
-    // };
-    c.bindEvents();
+    c.autoBindEvents();
+    eventBus.on('m:updated', function () {
+      v.render(m.data.n);
+    });
   },
-  bindEvents: function bindEvents() {
-    // 因为每点击一次就会新生成一个 v.html 插入到 el 中，所有的button也是新生成的，此处点击事件应该绑定在不会重新渲染的 el 上
-    v.el.on("click", "#add1", function () {
-      m.data.n += 1;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
-    v.el.on("click", "#minus1", function () {
-      m.data.n -= 1;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
-    v.el.on("click", "#multiply2", function () {
-      m.data.n *= 2;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
-    v.el.on("click", "#divide2", function () {
-      m.data.n /= 2;
-      localStorage.setItem("n", m.data.n);
-      v.render(m.data.n);
-    });
+
+  // 表驱动编程
+  events: {
+    'click #add1': 'add',
+    'click #minus1': 'minus',
+    'click #multiply2': 'mul',
+    'click #divide2': 'div'
+  },
+  add: function add() {
+    m.update({ n: m.data.n + 1 });
+  },
+  minus: function minus() {
+    m.update({ n: m.data.n - 1 });
+  },
+  mul: function mul() {
+    m.update({ n: m.data.n * 2 });
+  },
+  div: function div() {
+    m.update({ n: m.data.n / 2 });
+  },
+  autoBindEvents: function autoBindEvents() {
+    for (var key in c.events) {
+      // c.events[key]: "add" "minus" "mul" "div"
+      // c["add"]: add(){...}
+      var value = c[c.events[key]];
+      var spaceIndex = key.indexOf(' ');
+      var part1 = key.slice(0, spaceIndex);
+      var part2 = key.slice(spaceIndex + 1);
+      // console.log(part1, part2, value);
+      v.el.on(part1, part2, value);
+    }
   }
 };
 
@@ -11366,69 +11384,110 @@ var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
 },{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"app2.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
-var _jquery = require("jquery");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-require("./app2.css");
+require('./app2.css');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var html = "\n  <section id=\"app2\">\n    <ol class=\"tab-bar\">\n      <li>1</li>\n      <li>2</li>\n    </ol>\n    <ol class=\"tab-content\">\n      <li>\u5185\u5BB91</li>\n      <li>\u5185\u5BB92</li>\n    </ol>\n  </section>\n"; // 虽然多个文件都引入了jquery，但是jquery只加载一次
+var eventBus = (0, _jquery2.default)(window);
 
+var localKey = 'app2.index';
 
-var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)("body>.page"));
+var m = {
+  data: {
+    index: parseInt(localStorage.getItem(localKey)) || 0
+  },
 
-var $tabBar = (0, _jquery2.default)("#app2 .tab-bar");
-var $tabContent = (0, _jquery2.default)("#app2 .tab-content");
-var localKey = "app2.index";
-var index = localStorage.getItem(localKey) || 0;
+  create: function create() {},
+  delete: function _delete() {},
+  update: function update(data) {
+    Object.assign(m.data, data);
+    eventBus.trigger('m:updated');
+    localStorage.setItem(localKey, m.data.index);
+  },
+  get: function get() {}
+};
 
-// 监听tab-Bar的子元素li的点击事件
-$tabBar.on("click", "li", function (e) {
-  var $li = (0, _jquery2.default)(e.currentTarget); // 获取当前被点击的元素，其子元素被点击不会被获取到，但是e.target都会获取到
-  $li.addClass("selected").siblings().removeClass("selected");
+var v = {
+  el: null,
+  html: function html(index) {
+    return '\n      <div>\n        <ol class="tab-bar">\n        <li class="' + (index === 0 ? 'selected' : '') + '" data-index = "0">1</li>\n        <li class="' + (index === 1 ? 'selected' : '') + '" data-index = "1">2</li>\n      </ol>\n      <ol class="tab-content">\n      <li class="' + (index === 0 ? 'active' : '') + '">\u5185\u5BB91</li>\n      <li class="' + (index === 1 ? 'active' : '') + '">\u5185\u5BB92</li>\n        </ol>\n      </div>\n    ';
+  },
 
-  var index = $li.index();
-  localStorage.setItem(localKey, index);
-  $tabContent.children().eq(index).addClass("active") // 为标签添加属性active，事件触发后内容的显示和隐藏均在css定义好，这是基于一种抽象的思想：样式与行为分离
-  .siblings().removeClass("active");
+  init: function init(container) {
+    v.el = (0, _jquery2.default)(container); // 存下 container
+  },
+  render: function render(index) {
+    if (v.el.children.length !== 0) {
+      v.el.empty();
+    }
+    (0, _jquery2.default)(v.html(index)).appendTo((0, _jquery2.default)(v.el));
+  }
+};
 
-  // 永远不要用直接操作css的js api：css show hide
-  //   $tabContent
-  //     .children()
-  //     .eq(index)
-  //     .css({ display: "block" })
-  //     .siblings()
-  //     .css({ display: "none" });
-});
-$tabBar.children().eq(index).trigger("click"); // 默认触发显示内容1
+var c = {
+  init: function init(container) {
+    v.init(container);
+    console.log(m.data.index);
+    v.render(m.data.index);
+    c.autoBindEvents();
+    eventBus.on('m:updated', function () {
+      v.render(m.data.index);
+    });
+  },
+
+  events: {
+    'click .tab-bar li': 'x'
+  },
+  x: function x(e) {
+    var index = parseInt(e.currentTarget.dataset.index);
+    m.update({ index: index });
+  },
+  autoBindEvents: function autoBindEvents() {
+    for (var key in c.events) {
+      var value = c[c.events[key]];
+      var spaceIndex = key.indexOf(' ');
+      var part1 = key.slice(0, spaceIndex);
+      var part2 = key.slice(spaceIndex + 1);
+      v.el.on(part1, part2, value);
+    }
+  }
+};
+
+exports.default = c;
 },{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app2.css":"app2.css"}],"app3.css":[function(require,module,exports) {
 
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
 },{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"app3.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
-var _jquery = require("jquery");
+var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-require("./app3.css");
+require('./app3.css');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var html = "\n  <section id=\"app3\">\n    <div class=\"square\"></div>\n  </section>\n";
+var html = '\n  <section id="app3">\n    <div class="square"></div>\n  </section>\n';
 
-var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)("body>.page"));
+var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)('body>.page'));
 
-var $square = (0, _jquery2.default)("#app3 .square");
-var localKey = "app3.index";
+var $square = (0, _jquery2.default)('#app3 .square');
+var localKey = 'app3.index';
 // // yes / no / undefined（默认是undefined）
-var active = localStorage.getItem(localKey) === "yes";
+var active = localStorage.getItem(localKey) === 'yes';
 
 // if (active) {
 //   $square.addClass("active");
@@ -11436,17 +11495,17 @@ var active = localStorage.getItem(localKey) === "yes";
 //   $square.removeClass("active");
 // }
 // 以上代码可简写为一行代码
-$square.toggleClass("active", active);
+$square.toggleClass('active', active);
 
-$square.on("click", function () {
+$square.on('click', function () {
   // $square.toggleClass("active"); // 点击一下变化，再点击reset
   // 使用toggleClass我们不清楚什么时候加了active，什么时候没有加。要想刷新后保持其状态使用hasClass判断
-  if ($square.hasClass("active")) {
-    $square.removeClass("active");
-    localStorage.setItem(localKey, "no");
+  if ($square.hasClass('active')) {
+    $square.removeClass('active');
+    localStorage.setItem(localKey, 'no');
   } else {
-    $square.addClass("active");
-    localStorage.setItem(localKey, "yes");
+    $square.addClass('active');
+    localStorage.setItem(localKey, 'yes');
   }
 });
 },{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app3.css":"app3.css"}],"app4.css":[function(require,module,exports) {
@@ -11455,47 +11514,50 @@ var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
 },{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"app4.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
-var _jquery = require("jquery");
+var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-require("./app4.css");
+require('./app4.css');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var html = "\n<section id=\"app4\">\n  <div class=\"circle\"></div>\n</section>\n";
+var html = '\n<section id="app4">\n  <div class="circle"></div>\n</section>\n';
 
-var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)("body>.page"));
+var $element = (0, _jquery2.default)(html).appendTo((0, _jquery2.default)('body>.page'));
 
-var $circle = (0, _jquery2.default)("#app4 .circle");
+var $circle = (0, _jquery2.default)('#app4 .circle');
 
-$circle.on("mouseenter", function () {
-  $circle.addClass("active");
-}).on("mouseleave", function () {
-  $circle.removeClass("active");
+$circle.on('mouseenter', function () {
+  $circle.addClass('active');
+}).on('mouseleave', function () {
+  $circle.removeClass('active');
 });
 },{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./app4.css":"app4.css"}],"main.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
-require("./reset.css");
+require('./reset.css');
 
-require("./global.css");
+require('./global.css');
 
-var _app = require("./app1.js");
+var _app = require('./app1.js');
 
 var _app2 = _interopRequireDefault(_app);
 
-require("./app2.js");
+var _app3 = require('./app2.js');
 
-require("./app3.js");
+var _app4 = _interopRequireDefault(_app3);
 
-require("./app4.js");
+require('./app3.js');
+
+require('./app4.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_app2.default.init("#app1");
+_app2.default.init('#app1');
+_app4.default.init('#app2');
 },{"./reset.css":"reset.css","./global.css":"global.css","./app1.js":"app1.js","./app2.js":"app2.js","./app3.js":"app3.js","./app4.js":"app4.js"}],"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -11525,7 +11587,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '5179' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '4489' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
