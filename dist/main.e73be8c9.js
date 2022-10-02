@@ -11302,25 +11302,11 @@ var Model = function () {
         _this[key] = options[key];
       }
     });
-    // 以下代码与上面等效
-    // this.data = options.data
-    // this.create = options.create
-    // this.delete = options.delete
-    // this.update = options.update
-    // this.get = options.get
   }
 
   _createClass(Model, [{
     key: 'create',
     value: function create() {
-      // if (console && console.error) {
-      //   console.error('你还没有实现 create')
-      // }
-
-      // 此句使用了可选链运算符?.
-      // console?.error?.('你还没有实现 create')
-
-      // 以上两种代码与此句等效
       console && console.error && console.error('你还没有实现 create');
     }
   }, {
@@ -11345,11 +11331,17 @@ var Model = function () {
 
 exports.default = Model;
 },{}],"base\\View.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _jquery = require('jquery');
+
+var _jquery2 = _interopRequireDefault(_jquery);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11360,13 +11352,13 @@ var View = function View(_ref) {
 
   _classCallCheck(this, View);
 
-  this.el = $(el);
+  this.el = (0, _jquery2.default)(el);
   this.html = html;
   this.render = render;
 };
 
 exports.default = View;
-},{}],"app1.js":[function(require,module,exports) {
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js"}],"app1.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11406,23 +11398,27 @@ var m = new _Model2.default({
 
 // 其他放到 c
 var c = {
-  init: function init(container) {
-    // 视图相关放到 v
-    var v = new _View2.default({
-      el: container,
+  v: null,
+  initV: function initV() {
+    // 视图相关放到 v，由于 v 与 c 有联系，必须先拿到 container 才能创建 v 对象，因此让 v 和 c 共用一个对象
+    c.v = new _View2.default({
+      el: c.container,
       html: '\n        <div>\n          <div class="output">\n            <span id="number">{{n}}</span>\n          </div>\n          <div class="actions">\n            <button id="add1">+1</button>\n            <button id="minus1">-1</button>\n            <button id="multiply2">*2</button>\n            <button id="divide2">\xF72</button>\n          </div>\n        </div>\n      ',
       render: function render(n) {
-        if (v.el.children.length !== 0) {
-          v.el.empty();
+        if (c.v.el.children.length !== 0) {
+          c.v.el.empty();
         }
-        (0, _jquery2.default)(v.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(v.el));
+        (0, _jquery2.default)(c.v.html.replace('{{n}}', n)).appendTo((0, _jquery2.default)(c.v.el));
       }
     });
-    v.init(container);
-    v.render(m.data.n);
+    c.v.render(m.data.n); // 渲染
+  },
+  init: function init(container) {
+    c.container = container;
+    c.initV();
     c.autoBindEvents();
     eventBus.on('m:updated', function () {
-      v.render(m.data.n);
+      c.v.render(m.data.n);
     });
   },
 
@@ -11447,14 +11443,11 @@ var c = {
   },
   autoBindEvents: function autoBindEvents() {
     for (var key in c.events) {
-      // c.events[key]: "add" "minus" "mul" "div"
-      // c["add"]: add(){...}
       var value = c[c.events[key]];
       var spaceIndex = key.indexOf(' ');
       var part1 = key.slice(0, spaceIndex);
       var part2 = key.slice(spaceIndex + 1);
-      // console.log(part1, part2, value);
-      v.el.on(part1, part2, value);
+      c.v.el.on(part1, part2, value);
     }
   }
 };
@@ -11673,7 +11666,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '4489' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '3518' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

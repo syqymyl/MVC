@@ -20,10 +20,11 @@ const m = new Model({
 
 // 其他放到 c
 const c = {
-  init(container) {
-    // 视图相关放到 v
-    const v = new View({
-      el: container,
+  v: null,
+  initV() {
+    // 视图相关放到 v，由于 v 与 c 有联系，必须先拿到 container 才能创建 v 对象，因此让 v 和 c 共用一个对象
+    c.v = new View({
+      el: c.container,
       html: `
         <div>
           <div class="output">
@@ -38,17 +39,20 @@ const c = {
         </div>
       `,
       render(n) {
-        if (v.el.children.length !== 0) {
-          v.el.empty()
+        if (c.v.el.children.length !== 0) {
+          c.v.el.empty()
         }
-        $(v.html.replace('{{n}}', n)).appendTo($(v.el))
+        $(c.v.html.replace('{{n}}', n)).appendTo($(c.v.el))
       },
     })
-    v.init(container)
-    v.render(m.data.n)
+    c.v.render(m.data.n) // 渲染
+  },
+  init(container) {
+    c.container = container
+    c.initV()
     c.autoBindEvents()
     eventBus.on('m:updated', () => {
-      v.render(m.data.n)
+      c.v.render(m.data.n)
     })
   },
   // 表驱动编程
@@ -73,14 +77,11 @@ const c = {
 
   autoBindEvents() {
     for (let key in c.events) {
-      // c.events[key]: "add" "minus" "mul" "div"
-      // c["add"]: add(){...}
       const value = c[c.events[key]]
       const spaceIndex = key.indexOf(' ')
       const part1 = key.slice(0, spaceIndex)
       const part2 = key.slice(spaceIndex + 1)
-      // console.log(part1, part2, value);
-      v.el.on(part1, part2, value)
+      c.v.el.on(part1, part2, value)
     }
   },
 }
