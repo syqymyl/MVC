@@ -1,72 +1,48 @@
-import $, { get } from 'jquery'
 import './app1.css'
-import Model from './base/Model.js'
-import View from './base/View.js'
-
-// eventBus 有 on 事件和 trigger 事件
-// const eventBus = new EventBus()
-
-// 数据相关都放到 m
-const m = new Model({
-  data: {
-    n: parseFloat(localStorage.getItem('n')),
-  },
-  update(data) {
-    Object.assign(m.data, data)
-    // 为了实现直接用 m 调用 trigger : m.trigger()，可以让 Model 继承 EventBus
-    // eventBus.trigger('m:updated')
-    m.trigger('m:updated')
-    localStorage.setItem('n', m.data.n)
-  },
-})
+import Vue from 'vue'
 
 const init = (el) => {
-  // 其他放到 view
-  new View({
-    // vue.js: View
+  new Vue({
     el: el,
-    data: m.data,
-    // eventBus: eventBus,
-    html: `
-    <div>
+    data: {
+      n: parseFloat(localStorage.getItem('n')),
+    },
+    methods: {
+      add() {
+        this.n += 1
+      },
+      minus() {
+        this.n -= 1
+      },
+      mul() {
+        this.n *= 2
+      },
+      div() {
+        this.n /= 2
+      },
+    },
+    // 监听当 n 变化就存入 localStorage
+    watch: {
+      n() {
+        localStorage.setItem('n', this.n)
+      },
+    },
+    // 在 Vue 里用 @click 绑定事件
+    // 因为 template 中的 html 会替换外面的 #app1, 所以这里的 div 要改成 section
+    template: `
+    <section id="app1">
       <div class="output">
         <span id="number">{{n}}</span>
       </div>
       <div class="actions">
-        <button id="add1">+1</button>
-        <button id="minus1">-1</button>
-        <button id="multiply2">*2</button>
-        <button id="divide2">÷2</button>
+        <button @click="add">+1</button>
+        <button @click="minus">-1</button>
+        <button @click="mul">*2</button>
+        <button @click="div">÷2</button>
       </div>
-    </div>
+    </section>
   `,
-    render(data) {
-      if (this.el.children.length !== 0) {
-        this.el.empty()
-      }
-      $(this.html.replace('{{n}}', data.n)).appendTo($(this.el))
-    },
-    // 表驱动编程
-    events: {
-      'click #add1': 'add',
-      'click #minus1': 'minus',
-      'click #multiply2': 'mul',
-      'click #divide2': 'div',
-    },
-    add() {
-      m.update({ n: m.data.n + 1 })
-    },
-    minus() {
-      m.update({ n: m.data.n - 1 })
-    },
-    mul() {
-      m.update({ n: m.data.n * 2 })
-    },
-    div() {
-      m.update({ n: m.data.n / 2 })
-    },
   })
 }
 
-// 把 view 暴露出去
 export default init
