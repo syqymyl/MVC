@@ -4,7 +4,7 @@ import Model from './base/Model.js'
 import View from './base/View.js'
 
 // eventBus 有 on 事件和 trigger 事件
-const eventBus = $({})
+// const eventBus = new EventBus()
 
 // 数据相关都放到 m
 const m = new Model({
@@ -13,7 +13,9 @@ const m = new Model({
   },
   update(data) {
     Object.assign(m.data, data)
-    eventBus.trigger('m:updated')
+    // 为了实现直接用 m 调用 trigger : m.trigger()，可以让 Model 继承 EventBus
+    // eventBus.trigger('m:updated')
+    m.trigger('m:updated')
     localStorage.setItem('n', m.data.n)
   },
 })
@@ -24,7 +26,7 @@ const init = (el) => {
     // vue.js: View
     el: el,
     data: m.data,
-    eventBus: eventBus,
+    // eventBus: eventBus,
     html: `
     <div>
       <div class="output">

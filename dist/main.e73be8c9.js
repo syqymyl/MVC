@@ -11280,7 +11280,7 @@ return jQuery;
 var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"base\\Model.js":[function(require,module,exports) {
+},{"_css_loader":"C:\\Users\\落薇\\AppData\\Local\\Yarn\\Data\\global\\node_modules\\parcel\\src\\builtins\\css-loader.js"}],"base\\EventBus.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11289,19 +11289,86 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _jquery = require('jquery');
+
+var _jquery2 = _interopRequireDefault(_jquery);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Model = function () {
-  function Model(options) {
-    var _this = this;
+var EventBus = function () {
+  function EventBus() {
+    _classCallCheck(this, EventBus);
 
+    this._eventBus = (0, _jquery2.default)(window);
+  }
+
+  _createClass(EventBus, [{
+    key: 'on',
+    value: function on(eventName, fn) {
+      return this._eventBus.on(eventName, fn);
+    }
+  }, {
+    key: 'trigger',
+    value: function trigger(eventName, data) {
+      return this._eventBus.trigger(eventName, data);
+    }
+  }, {
+    key: 'off',
+    value: function off(eventName, fn) {
+      return this._eventBus.off(eventName, fn);
+    }
+  }]);
+
+  return EventBus;
+}();
+
+exports.default = EventBus;
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js"}],"base\\Model.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _EventBus2 = require('./EventBus.js');
+
+var _EventBus3 = _interopRequireDefault(_EventBus2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Model = function (_EventBus) {
+  _inherits(Model, _EventBus);
+
+  function Model(options) {
     _classCallCheck(this, Model);
 
-    ;['data', 'create', 'delete', 'update', 'get'].forEach(function (key) {
+    // EventBus#constructor()
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this));
+
+    var keys = ['data', 'create', 'delete', 'update', 'get'];
+    keys.forEach(function (key) {
       if (key in options) {
         _this[key] = options[key];
       }
     });
+    // js代码不能以括号开头（不加分号的时候），[]会往前面的()靠，以下代码等价于：super()[].forEach()，super()[]返回的是undefined，undefined没有forEach
+    // super() // EventBus#constructor()
+    //   [('data', 'create', 'delete', 'update', 'get')].forEach((key) => {
+    //     if (key in options) {
+    //       this[key] = options[key]
+    //     }
+    //   })
+    return _this;
   }
 
   _createClass(Model, [{
@@ -11327,10 +11394,10 @@ var Model = function () {
   }]);
 
   return Model;
-}();
+}(_EventBus3.default);
 
 exports.default = Model;
-},{}],"base\\View.js":[function(require,module,exports) {
+},{"./EventBus.js":"base\\EventBus.js"}],"base\\View.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11343,24 +11410,39 @@ var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
+var _EventBus2 = require('./EventBus.js');
+
+var _EventBus3 = _interopRequireDefault(_EventBus2);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var View = function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var View = function (_EventBus) {
+  _inherits(View, _EventBus);
+
   //   constructor({ el, html, render, data, eventBus, events }) {
   function View(options) {
-    var _this = this;
-
     _classCallCheck(this, View);
 
-    Object.assign(this, options);
-    this.el = (0, _jquery2.default)(this.el);
-    this.render(this.data);
-    this.autoBindEvents();
-    this.eventBus.on('m:updated', function () {
+    // EventBus#constructor()
+    var _this = _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this));
+
+    Object.assign(_this, options);
+    _this.el = (0, _jquery2.default)(_this.el);
+    _this.render(_this.data);
+    _this.autoBindEvents();
+    _this.on('m:updated', function () {
       _this.render(_this.data);
     });
+    // this.trigger.on('m:updated', () => {
+    //   this.render(this.data)
+    // })
+    return _this;
   }
 
   _createClass(View, [{
@@ -11377,10 +11459,10 @@ var View = function () {
   }]);
 
   return View;
-}();
+}(_EventBus3.default);
 
 exports.default = View;
-},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js"}],"app1.js":[function(require,module,exports) {
+},{"jquery":"..\\node_modules\\jquery\\dist\\jquery.js","./EventBus.js":"base\\EventBus.js"}],"app1.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11404,7 +11486,7 @@ var _View2 = _interopRequireDefault(_View);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // eventBus 有 on 事件和 trigger 事件
-var eventBus = (0, _jquery2.default)({});
+// const eventBus = new EventBus()
 
 // 数据相关都放到 m
 var m = new _Model2.default({
@@ -11413,7 +11495,9 @@ var m = new _Model2.default({
   },
   update: function update(data) {
     Object.assign(m.data, data);
-    eventBus.trigger('m:updated');
+    // 为了实现直接用 m 调用 trigger : m.trigger()，可以让 Model 继承 EventBus
+    // eventBus.trigger('m:updated')
+    m.trigger('m:updated');
     localStorage.setItem('n', m.data.n);
   }
 });
@@ -11424,7 +11508,7 @@ var init = function init(el) {
     // vue.js: View
     el: el,
     data: m.data,
-    eventBus: eventBus,
+    // eventBus: eventBus,
     html: '\n    <div>\n      <div class="output">\n        <span id="number">{{n}}</span>\n      </div>\n      <div class="actions">\n        <button id="add1">+1</button>\n        <button id="minus1">-1</button>\n        <button id="multiply2">*2</button>\n        <button id="divide2">\xF72</button>\n      </div>\n    </div>\n  ',
     render: function render(data) {
       if (this.el.children.length !== 0) {
@@ -11485,7 +11569,7 @@ var _View2 = _interopRequireDefault(_View);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var eventBus = (0, _jquery2.default)(window);
+// const eventBus = new EventBus()
 
 var localKey = 'app2.index';
 
@@ -11495,7 +11579,8 @@ var m = new _Model2.default({
   },
   update: function update(data) {
     Object.assign(m.data, data);
-    eventBus.trigger('m:updated');
+    m.trigger('m:updated');
+    // eventBus.trigger('m:updated')
     localStorage.setItem(localKey, m.data.index);
   }
 });
@@ -11504,7 +11589,7 @@ var init = function init(el) {
   new _View2.default({
     el: el,
     data: m.data,
-    eventBus: eventBus,
+    // eventBus: eventBus,
     html: function html(index) {
       return '\n        <div>\n          <ol class="tab-bar">\n          <li class="' + (index === 0 ? 'selected' : '') + '" data-index = "0">1</li>\n          <li class="' + (index === 1 ? 'selected' : '') + '" data-index = "1">2</li>\n        </ol>\n        <ol class="tab-content">\n        <li class="' + (index === 0 ? 'active' : '') + '">\u5185\u5BB91</li>\n        <li class="' + (index === 1 ? 'active' : '') + '">\u5185\u5BB92</li>\n          </ol>\n        </div>\n      ';
     },
@@ -11651,7 +11736,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '14599' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '11460' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

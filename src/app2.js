@@ -3,7 +3,7 @@ import './app2.css'
 import Model from './base/Model.js'
 import View from './base/View.js'
 
-const eventBus = $(window)
+// const eventBus = new EventBus()
 
 const localKey = 'app2.index'
 
@@ -13,7 +13,8 @@ const m = new Model({
   },
   update(data) {
     Object.assign(m.data, data)
-    eventBus.trigger('m:updated')
+    m.trigger('m:updated')
+    // eventBus.trigger('m:updated')
     localStorage.setItem(localKey, m.data.index)
   },
 })
@@ -22,7 +23,7 @@ const init = (el) => {
   new View({
     el: el,
     data: m.data,
-    eventBus: eventBus,
+    // eventBus: eventBus,
     html: (index) => {
       return `
         <div>
